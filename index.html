@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sourabh — Data Analyst</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <nav id="top">
+    <div class="wrap navbar">
+      <a href="#top" class="logo">sourabh<span>.</span><span class="logo-sub">Portfolio</span></a>
+      <div class="navpill">
+        <a href="#about" class="navlink">About</a>
+        <a href="#skills" class="navlink">Skills</a>
+        <a href="#certs" class="navlink">Certification</a>
+        <a href="#work" class="navlink">Portfolio</a>
+        <a href="#contact" class="navlink">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero wrap">
+    <div>
+      <h1>Turning raw data<br>into <em>clear decisions</em>.</h1>
+      <p>MCA student at D Y Patil University, Ambi, Pune, with a BCA foundation. I work with Excel, Python, SQL and
+        Power BI to turn data into decisions.</p>
+      <div class="btnrow">
+        <a href="#work" class="btn primary">View my portfolio</a>
+        <a href="Files/resume.pdf" class="btn">Download resume</a>
+      </div>
+      <div class="stat-strip">
+        <div class="stat"><b>MCA</b><span>In progress</span></div>
+        <div class="stat"><b>1</b><span>Certification</span></div>
+        <div class="stat"><b>2+</b><span>Projects built</span></div>
+      </div>
+    </div>
+    <div class="photo-col">
+      <div class="blob">
+        <div class="blob-inner"><img src="Files/photograph.jpg" alt="Sourabh"></div>
+      </div>
+      <div class="typewriter"><span id="typewriter-text"></span><span class="cursor">|</span></div>
+    </div>
+  </header>
+
+  <section id="about">
+    <div class="wrap">
+      <span class="mono eyebrow">01 — About</span>
+      <h2 class="sectitle">Grounded in data, aimed at insight.</h2>
+      <div class="about-grid">
+        <p>I'm an MCA student building a focused foundation in data analysis — using Excel, Python, SQL and Power BI to
+          turn raw numbers into reporting people can actually act on. I also carry hands-on full-stack experience, which
+          shapes how I think about clean structure and working systems.</p>
+        <div class="facts">
+          <div class="fact"><span class="dot"></span>
+            <div><b>Education</b><span>MCA — D Y Patil University, Ambi, Pune<br>BCA — Vivekanand College,
+                Kolhapur</span></div>
+          </div>
+          <div class="fact"><span class="dot"></span>
+            <div><b>Focus</b><span>Data analysis & reporting — Excel, Python, SQL, Power BI</span></div>
+          </div>
+          <div class="fact"><span class="dot"></span>
+            <div><b>Based in</b><span>Kolhapur, Maharashtra</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="approach">
+    <div class="wrap">
+      <span class="mono eyebrow">02 — Approach</span>
+      <h2 class="sectitle">How I work with data.</h2>
+      <div class="approach-grid">
+        <div class="card approach-card">
+          <h3>Clean & Prepare</h3>
+          <p>Pulling raw data into shape with Excel and Python — handling missing values, formatting, and structuring it
+            for analysis.</p>
+        </div>
+        <div class="card approach-card">
+          <h3>Query & Analyze</h3>
+          <p>Writing SQL to explore, join, and summarize data, then running EDA to find the patterns worth reporting on.
+          </p>
+        </div>
+        <div class="card approach-card">
+          <h3>Report & Visualize</h3>
+          <p>Turning findings into Power BI dashboards and clear summaries that non-technical stakeholders can actually
+            use.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <span class="mono eyebrow">03 — Skills</span>
+      <h2 class="sectitle">Tools I work with.</h2>
+      <div class="skill-grid">
+        <div class="card skill-card">
+          <h3>Excel</h3>
+          <p style="color:var(--muted); font-size:0.9rem;">Pivot tables, formulas, and quick data cleanup.</p>
+        </div>
+        <div class="card skill-card">
+          <h3>Python</h3>
+          <p style="color:var(--muted); font-size:0.9rem;">Pandas & NumPy for data wrangling and analysis.</p>
+        </div>
+        <div class="card skill-card">
+          <h3>SQL</h3>
+          <p style="color:var(--muted); font-size:0.9rem;">Queries, joins, and aggregations for reporting.</p>
+        </div>
+        <div class="card skill-card">
+          <h3>Power BI</h3>
+          <p style="color:var(--muted); font-size:0.9rem;">Interactive dashboards and stakeholder reporting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="certs">
+    <div class="wrap">
+      <span class="mono eyebrow">04 — Certification</span>
+      <h2 class="sectitle">Certificate earned.</h2>
+      <a href="Files/Forage-certificate.pdf" target="_blank" class="card cert-card">
+        <div class="cert-thumb cert-pdf">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2v6h6" />
+          </svg>
+        </div>
+        <div>
+          <h3>Deloitte Data Analytics Job Simulation</h3>
+          <p class="role">Forage · 2026</p>
+          <div class="cert-links"><span>View certificate (PDF) →</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="wrap">
+      <span class="mono eyebrow">05 — Portfolio</span>
+      <h2 class="sectitle">My portfolio.</h2>
+      <div class="proj">
+        <div class="card proj-card">
+          <div class="proj-num">01</div>
+          <div>
+            <h3>Ultraceutics India</h3>
+            <p>A production web app built as a React/Vite + Express/Prisma monorepo. Migrated the backend from Railway
+              to Vercel serverless, resolved navigation and routing bugs, and shipped it live.</p>
+            <div class="proj-links"><a href="https://ultraceutics-mvp.vercel.app/" target="_blank">Live site →</a></div>
+          </div>
+        </div>
+        <div class="card proj-card">
+          <div class="proj-num">02</div>
+          <div>
+            <h3>Gym Management System</h3>
+            <p>An ASP.NET MVC application for managing memberships and operations — reframed around data reporting, with
+              SQL-driven analysis on top of member and activity data.</p>
+            <div class="proj-links"><a href="https://github.com/sourabhk-tech/GymManagementSystem"
+                target="_blank">Source →</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="card contact-card">
+        <h2>Let's work together.</h2>
+        <p>Open to Data Analyst roles. Reach out anytime.</p>
+        <div class="btnrow" style="justify-content:center;">
+          <a href="mailto:sourabhkumbhar7047@gmail.com" class="btn primary">Email me</a>
+          <a href="https://www.linkedin.com/in/sourabh-kumbhar-3b2104368?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
+            class="btn" target="_blank">LinkedIn</a>
+          <a href="https://github.com/sourabhk-tech" class="btn" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-links">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#certs">Certification</a>
+      <a href="#work">Portfolio</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <p>© 2026 Sourabh. Built with care. <a href="#top">Back to top ↑</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
