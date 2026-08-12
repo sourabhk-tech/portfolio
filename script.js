@@ -149,32 +149,6 @@
   });
 })();
 
-// ===== NETWORK STATUS BANNER =====
-(function () {
-  const banner = document.getElementById('offline-banner') || document.getElementById('net-banner');
-  const text = document.getElementById('net-banner-text') || banner;
-  if (!banner) return;
-
-  function setOffline() {
-    if (text && text !== banner) text.textContent = "You're offline — showing cached content";
-    else banner.textContent = "You're offline — showing cached content";
-    banner.hidden = false;
-    banner.classList.add('show');
-  }
-  function setBackOnline() {
-    if (text && text !== banner) text.textContent = 'Back online';
-    else banner.textContent = 'Back online';
-    banner.hidden = false;
-    banner.classList.add('show');
-    setTimeout(function () {
-      banner.classList.remove('show');
-      setTimeout(function () { banner.hidden = true; }, 350);
-    }, 2000);
-  }
-  window.addEventListener('offline', setOffline);
-  window.addEventListener('online', setBackOnline);
-  if (!navigator.onLine) setOffline();
-})();
 
 // ===== PHOTO BLUR-UP LOAD =====
 (function () {
