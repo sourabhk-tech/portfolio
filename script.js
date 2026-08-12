@@ -141,6 +141,14 @@
   });
 })();
 
+// ===== LOCK PHOTOS AGAINST DRAG / SAVE =====
+(function () {
+  document.querySelectorAll('#pre-photo, #hero-photo').forEach(function (img) {
+    img.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    img.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  });
+})();
+
 // ===== NETWORK STATUS BANNER =====
 (function () {
   const banner = document.getElementById('offline-banner') || document.getElementById('net-banner');
