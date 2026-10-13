@@ -41,9 +41,9 @@ a:hover .arrow-up{transform:translateY(-5px);}
 @keyframes arrowNudge{0%,100%{transform:translateX(0);} 50%{transform:translateX(3px);}}
 @keyframes arrowNudgeUp{0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);}}
 
-/* PRELOADER — dark brand splash */
+/* PRELOADER — brand splash in the site's own light theme */
 #preloader{
-  position:fixed; inset:0; z-index:99999; background:#100e17;
+  position:fixed; inset:0; z-index:99999; background:var(--bg);
   display:none; align-items:center; justify-content:center;
   transition:opacity .6s ease, visibility .6s ease;
   overflow:hidden;
@@ -53,10 +53,9 @@ a:hover .arrow-up{transform:translateY(-5px);}
 html.js #preloader{display:flex;}
 #preloader.hidden{opacity:0; visibility:hidden; pointer-events:none;}
 
-/* Soft brand glow drifting behind the wordmark — our stand-in for the
-   reference splash's animated backdrop, in the site's own violet/teal. */
+/* Soft brand glow drifting behind the intro, in the site's own violet/teal. */
 .pre-glow{
-  position:absolute; inset:-25%; z-index:0; filter:blur(90px); opacity:0.4;
+  position:absolute; inset:-25%; z-index:0; filter:blur(90px); opacity:0.5;
   background:
     radial-gradient(40% 40% at 22% 30%, var(--violet), transparent 70%),
     radial-gradient(38% 38% at 78% 70%, var(--teal), transparent 70%);
@@ -70,20 +69,30 @@ html.js #preloader{display:flex;}
 
 .pre-content{
   position:relative; z-index:2; text-align:center; padding:0 22px;
+  display:flex; flex-direction:column; align-items:center;
   /* springy entrance */
   opacity:0; transform:translateY(24px) scale(0.96);
   animation:preIn .8s cubic-bezier(.34,1.56,.64,1) .15s forwards;
 }
 @keyframes preIn{ to{opacity:1; transform:none;} }
+.pre-photo-wrap{
+  width:88px; height:88px; border-radius:50%; overflow:hidden;
+  box-shadow:var(--shadow-out);
+  background:linear-gradient(160deg,var(--violet),var(--teal));
+  flex-shrink:0; margin-bottom:18px;
+  animation:pulse 1.6s ease-in-out infinite;
+}
+.pre-photo{width:100%; height:100%; object-fit:cover; object-position:center 20%;}
+@keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.06);}}
 .pre-name{
   font-family:'Fraunces',serif; font-weight:900; line-height:1.04; margin:0;
-  font-size:clamp(2.1rem,7vw,4.5rem); letter-spacing:0.04em; color:#fff;
-  text-shadow:0 4px 40px rgba(0,0,0,.6);
+  font-size:clamp(2.1rem,7vw,4.5rem); letter-spacing:0.04em; color:var(--ink);
+  text-shadow:0 2px 14px rgba(124,111,224,.22);
 }
-.pre-name-accent{font-style:italic; color:var(--teal);}
+.pre-name-accent{font-style:italic; color:var(--violet);}
 .pre-tag{
   font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:500;
-  letter-spacing:0.34em; text-transform:uppercase; color:rgba(255,255,255,.6);
+  letter-spacing:0.34em; text-transform:uppercase; color:var(--muted);
   max-width:30ch; margin:14px auto 0;
 }
 .pre-rule{
@@ -96,7 +105,7 @@ html.js #preloader{display:flex;}
 /* Thin full-width bar pinned to the bottom. script.js fills it from REAL load
    progress (scaleX), so it completes exactly when the page is ready instead of
    running on a fixed fake timer. */
-.pre-bar{position:absolute; left:0; right:0; bottom:0; height:2px; z-index:3; background:rgba(255,255,255,.08); overflow:hidden;}
+.pre-bar{position:absolute; left:0; right:0; bottom:0; height:2px; z-index:3; background:rgba(46,43,69,.1); overflow:hidden;}
 .pre-bar-fill{height:100%; width:100%; transform:scaleX(0); transform-origin:left center; background:linear-gradient(90deg,var(--violet),var(--teal)); transition:transform .28s cubic-bezier(.33,0,.2,1);}
 
 /* NETWORK BANNER */
@@ -348,7 +357,7 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .blob, .pre-glow{animation:none;}
+  .blob, .pre-glow, .pre-photo-wrap{animation:none;}
   .pre-content{opacity:1; transform:none; animation:none;}
   .pre-rule{width:104px; animation:none;}
   .pre-bar-fill{transition:none;}

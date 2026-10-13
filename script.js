@@ -76,8 +76,8 @@ window.__portfolioReady = true;
   // 2) the stylesheet, 3) this script (it is running right now)…
   track(document.querySelector('link[href$="style.css"]'), 2);
   checkpoints.push({ weight: 1, done: true });
-  // 4) the hero photo…
-  track(document.getElementById('hero-photo'), 2);
+  // 4) the photo that both the intro and the hero show…
+  track(document.getElementById('pre-photo') || document.getElementById('hero-photo'), 2);
   // 5) the webfont stylesheet, 6) the fonts themselves.
   track(document.querySelector('link[href*="fonts.googleapis.com"]'), 1);
   const fontCp = { weight: 2, done: false };
@@ -215,7 +215,7 @@ window.__portfolioReady = true;
 
 // ===== LOCK PHOTOS AGAINST DRAG / SAVE =====
 (function () {
-  document.querySelectorAll('#hero-photo').forEach(function (img) {
+  document.querySelectorAll('#pre-photo, #hero-photo').forEach(function (img) {
     img.addEventListener('dragstart', function (e) { e.preventDefault(); });
     img.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   });
