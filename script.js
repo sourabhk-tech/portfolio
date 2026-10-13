@@ -1,9 +1,15 @@
 // ===== PRELOADER + photo dissolve to hero =====
+window.__portfolioReady = true;
+
 (function () {
   const pre = document.getElementById('preloader');
   if (!pre) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  // Data-saver or a very slow link: keep the intro short and cheap instead of
+  // making people wait through the full choreography.
+  const slowNet = !!(conn && (conn.saveData || /^(slow-2g|2g)$/.test(conn.effectiveType || '')));
   const prePhotoWrap = document.getElementById('pre-photo-wrap');
   const prePhoto = document.getElementById('pre-photo');
   const heroPhoto = document.getElementById('hero-photo');
@@ -11,19 +17,40 @@
 
   if (heroPhoto) heroPhoto.classList.add('waiting');
 
+  function revealHero() {
+    document.querySelectorAll('.hero .reveal').forEach(function (el) {
+      el.classList.add('in-view');
+      el.classList.add('in');
+    });
+  }
+
   function exitZoom() { pre.classList.add('exit'); }
   function barsOut() { pre.classList.add('bars-out'); }
   function hide() { pre.classList.add('hidden'); }
   function destroy() {
     if (pre.parentNode) pre.remove();
+    // The page is visible now — let the typewriter start.
+    document.dispatchEvent(new CustomEvent('intro:done'));
+  }
+  // Mark the hero photo ready (blur-up in) without waiting on the flyer.
+  function settleHeroPhoto() {
+    if (!heroPhoto) return;
+    heroPhoto.classList.remove('waiting');
+    heroPhoto.classList.add('loaded');
+    const frame = document.getElementById('photo-frame');
+    if (frame) frame.classList.add('done');
+  }
+  // Tracked timers so the intro can be cancelled cleanly when skipped.
+  let timers = [];
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function clearTimers() {
+    timers.forEach(function (id) { clearTimeout(id); });
+    timers = [];
   }
 
   function flyPhotoToHero() {
     if (reduceMotion || !prePhotoWrap || !heroBlob || !heroPhoto) {
-      if (heroPhoto) {
-        heroPhoto.classList.remove('waiting');
-        heroPhoto.classList.add('loaded');
-      }
+      settleHeroPhoto();
       return;
     }
 
@@ -54,53 +81,64 @@
     });
 
     setTimeout(function () {
-      heroPhoto.classList.remove('waiting');
-      heroPhoto.classList.add('loaded');
+      settleHeroPhoto();
       flyer.classList.add('done');
       setTimeout(function () { flyer.remove(); }, 350);
     }, 850);
   }
 
-  function runSequence() {
-    // Reveal hero text under the wipe so the page is ready when bars open
-    document.querySelectorAll('.hero .reveal').forEach(function (el) {
-      el.classList.add('in-view');
-      el.classList.add('in');
-    });
+  let started = false;
 
-    if (reduceMotion) {
-      hide();
-      setTimeout(destroy, 400);
-      if (heroPhoto) {
-        heroPhoto.classList.remove('waiting');
-        heroPhoto.classList.add('loaded');
+  function runSequence() {
+    if (started) return;
+    started = true;
+    // Reveal hero content under the wipe so the page is ready when bars open
+    revealHero();
+
+    // Reduced motion, or a slow/data-saver connection: skip the long
+    // choreography and get out of the way quickly.
+    if (reduceMotion || slowNet) {
+      settleHeroPhoto();
+      if (reduceMotion) {
+        hide();
+        later(destroy, 400);
+      } else {
+        exitZoom();
+        later(barsOut, 250);
+        later(hide, 400);
+        later(destroy, 900);
       }
       return;
     }
 
     // zoom → fly photo → bars reveal the real page immediately (transparent
     // background fix) → quick cleanup fade → destroy once the last bar clears
-    setTimeout(exitZoom, 1400);
-    setTimeout(flyPhotoToHero, 1550);
-    setTimeout(barsOut, 1850);
-    setTimeout(hide, 2000);
-    setTimeout(destroy, 2700);
+    later(exitZoom, 1400);
+    later(flyPhotoToHero, 1550);
+    later(barsOut, 1850);
+    later(hide, 2000);
+    later(destroy, 2700);
   }
+
+  // Tap, click or any key skips the intro — matters most on slow connections,
+  // where the intro would otherwise hold the page for a few seconds.
+  function skipIntro() {
+    if (pre.classList.contains('hidden')) return;
+    clearTimers();
+    started = true;
+    settleHeroPhoto();
+    hide();
+    later(destroy, 350);
+  }
+  window.addEventListener('pointerdown', skipIntro, { once: true, passive: true });
+  window.addEventListener('keydown', skipIntro, { once: true });
 
   if (document.readyState === 'complete') {
     runSequence();
   } else {
     window.addEventListener('load', runSequence);
-    // Safety net: never block the site for more than ~4s
-    setTimeout(function () {
-      if (pre.parentNode && !pre.classList.contains('exit')) {
-        exitZoom();
-        setTimeout(flyPhotoToHero, 150);
-        setTimeout(barsOut, 450);
-        setTimeout(hide, 600);
-        setTimeout(destroy, 1300);
-      }
-    }, 3000);
+    // Safety net: never hold the intro for more than ~2.2s of loading
+    later(runSequence, 2200);
   }
 })();
 
@@ -239,8 +277,15 @@
     }
     setTimeout(tick, deleting ? 40 : 80);
   }
-  // Start after intro finishes
-  setTimeout(tick, 2800);
+  // Start as soon as the intro is done (falls back to 2.8s if it never fires)
+  let startedTyping = false;
+  function beginTyping() {
+    if (startedTyping) return;
+    startedTyping = true;
+    tick();
+  }
+  document.addEventListener('intro:done', beginTyping);
+  setTimeout(beginTyping, 2800);
 })();
 
 // ===== BACKGROUND PIXEL ANIMATION (perf-capped, pauses when tab hidden) =====
@@ -249,6 +294,10 @@
   if (!canvas) return;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) return;
+
+  // Skip the decorative canvas entirely on data-saver / very slow connections
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn && (conn.saveData || /^(slow-2g|2g)$/.test(conn.effectiveType || ''))) return;
 
   const ctx = canvas.getContext('2d');
   let w, h, pixels, rafId;

@@ -44,10 +44,13 @@ a:hover .arrow-up{transform:translateY(-5px);}
 /* PRELOADER */
 #preloader{
   position:fixed; inset:0; z-index:999; background:var(--bg);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px;
   transition:opacity .3s ease, visibility .3s ease;
   overflow:hidden;
 }
+/* Only show the intro when JS is running — otherwise the overlay would cover
+   the page forever on a no-JS or failed-script load. */
+html.js #preloader{display:flex;}
 #preloader.hidden{opacity:0; visibility:hidden; pointer-events:none;}
 /* Once the bar-wipe curtain takes over, the preloader's own solid background
    must go transparent immediately — otherwise the bars slide away to reveal
@@ -185,10 +188,12 @@ nav.scrolled{padding:10px 0;}
 /* HERO */
 .hero{padding:clamp(50px,9vw,90px) 0 clamp(40px,6vw,60px);}
 .hero > .wrap{display:grid; grid-template-columns:1.1fr 0.9fr; gap:clamp(28px,5vw,40px); align-items:center;}
-.hero h1{font-size:clamp(2rem,5vw,3.4rem); line-height:1.1; margin:16px 0 20px; opacity:0; animation:fadeUp .7s ease .1s forwards;}
+/* Hero entrance is handled by the shared .reveal animation (staggered below),
+   so these no longer run their own fadeUp — that duplicate used
+   animation-fill-mode:forwards, which permanently overrode hover transforms. */
+.hero h1{font-size:clamp(2rem,5vw,3.4rem); line-height:1.1; margin:16px 0 20px;}
 .hero h1 em{font-style:normal; color:var(--violet);}
-.hero p{color:var(--muted); font-size:clamp(0.95rem,2vw,1.08rem); max-width:480px; margin-bottom:28px; opacity:0; animation:fadeUp .7s ease .25s forwards;}
-@keyframes fadeUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);}}
+.hero p{color:var(--muted); font-size:clamp(0.95rem,2vw,1.08rem); max-width:480px; margin-bottom:28px;}
 
 .btn{padding:14px 24px; border-radius:18px; font-weight:600; font-size:0.92rem; background:var(--clay); box-shadow:var(--shadow-out); transition:all .2s ease; display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;}
 .btn:hover{box-shadow:var(--shadow-in); transform:translateY(1px);}
@@ -202,10 +207,9 @@ nav.scrolled{padding:10px 0;}
   display:inline-flex; align-items:center; gap:14px;
   background:var(--clay); border-radius:20px; box-shadow:var(--shadow-out);
   padding:14px 20px; max-width:340px;
-  opacity:0; animation:fadeUp .7s ease .4s forwards;
   transition:transform .2s ease, box-shadow .2s ease;
 }
-.resume-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-in);}
+.hero .resume-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-in);}
 .resume-icon{color:var(--violet); flex-shrink:0; display:flex;}
 .resume-text{display:flex; flex-direction:column; flex:1;}
 .resume-text b{font-size:0.95rem;}
@@ -239,10 +243,35 @@ section{padding:clamp(48px,8vw,70px) 0; content-visibility:auto; contain-intrins
 .eyebrow{display:inline-block; margin-bottom:14px;}
 .sectitle{font-size:clamp(1.5rem,4vw,2.1rem); margin-bottom:clamp(24px,4vw,34px);}
 
-/* SCROLL REVEAL — smoother easing + slight scale for a more premium
-   "settle into place" transition as you scroll */
-.reveal{opacity:0; transform:translateY(28px) scale(.98); transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);}
-.reveal.in-view, .reveal.in{opacity:1; transform:translateY(0) scale(1);}
+/* SCROLL REVEAL — driven by a keyframe animation rather than a transition, so
+   component transitions (.card's, for one) can't clobber the fade. The JS gate
+   uses :where() to keep specificity low, so hover transforms still win once an
+   element has landed, and with scripting off (or script.js missing) the content
+   is simply visible — it can never get stuck at opacity:0. */
+:where(html.js) .reveal{opacity:0; transform:translateY(28px) scale(.98);}
+:where(html.js) .reveal.in-view, :where(html.js) .reveal.in{
+  opacity:1; transform:translateY(0) scale(1);
+  animation:revealIn .7s cubic-bezier(.22,1,.36,1) backwards;
+}
+@keyframes revealIn{
+  from{opacity:0; transform:translateY(28px) scale(.98);}
+  to{opacity:1; transform:translateY(0) scale(1);}
+}
+/* Staggered entrance — each rule out-ranks the animation shorthand above. */
+.hero h1.reveal{animation-delay:0s;}
+.hero p.reveal{animation-delay:.09s;}
+.hero .resume-card.reveal{animation-delay:.18s;}
+.hero .photo-col.reveal{animation-delay:.12s;}
+.sectitle.reveal{animation-delay:.06s;}
+.about-grid .reveal:nth-child(2){animation-delay:.08s;}
+.about-grid .reveal:nth-child(3){animation-delay:.16s;}
+.approach-grid .reveal:nth-child(2){animation-delay:.08s;}
+.approach-grid .reveal:nth-child(3){animation-delay:.16s;}
+.skill-grid .reveal:nth-child(2){animation-delay:.06s;}
+.skill-grid .reveal:nth-child(3){animation-delay:.12s;}
+.skill-grid .reveal:nth-child(4){animation-delay:.18s;}
+.proj .reveal:nth-child(2){animation-delay:.08s;}
+.proj .reveal:nth-child(3){animation-delay:.16s;}
 
 /* CLAY CARD */
 .card{background:var(--clay); border-radius:24px; box-shadow:var(--shadow-out); padding:clamp(22px,4vw,30px); transition:transform .25s ease, box-shadow .25s ease;}
@@ -355,8 +384,8 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
   .bar-wipe span{animation:none !important;}
   #preloader.exit .pre-content, #preloader.exit .pre-flash{animation:none;}
   .pre-bar-fill{width:100%;}
-  .reveal{opacity:1; transform:none; transition:none;}
-  .hero h1, .hero p, .resume-card{opacity:1; animation:none;}
+  html.js .reveal{opacity:1 !important; transform:none !important; animation:none !important;}
+  .hero h1, .hero p, .resume-card{opacity:1 !important; animation:none !important;}
   .photo-flyer{transition-duration:0.01ms !important;}
   .arrow{transition:none;}
 }
