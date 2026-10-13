@@ -1,4 +1,4 @@
-// ===== PRELOADER + photo dissolve to hero =====
+// ===== INTRO SPLASH =====
 window.__portfolioReady = true;
 
 (function () {
@@ -10,10 +10,7 @@ window.__portfolioReady = true;
   // Data-saver or a very slow link: keep the intro short and cheap instead of
   // making people wait through the full choreography.
   const slowNet = !!(conn && (conn.saveData || /^(slow-2g|2g)$/.test(conn.effectiveType || '')));
-  const prePhotoWrap = document.getElementById('pre-photo-wrap');
-  const prePhoto = document.getElementById('pre-photo');
   const heroPhoto = document.getElementById('hero-photo');
-  const heroBlob = document.getElementById('hero-blob');
 
   if (heroPhoto) heroPhoto.classList.add('waiting');
 
@@ -24,8 +21,6 @@ window.__portfolioReady = true;
     });
   }
 
-  function exitZoom() { pre.classList.add('exit'); }
-  function barsOut() { pre.classList.add('bars-out'); }
   function hide() { pre.classList.add('hidden'); }
   function destroy() {
     clearInterval(barTimer);
@@ -33,7 +28,7 @@ window.__portfolioReady = true;
     // The page is visible now — let the typewriter start.
     document.dispatchEvent(new CustomEvent('intro:done'));
   }
-  // Mark the hero photo ready (blur-up in) without waiting on the flyer.
+  // Mark the hero photo ready (blur-up in) as the splash clears.
   function settleHeroPhoto() {
     if (!heroPhoto) return;
     heroPhoto.classList.remove('waiting');
@@ -49,53 +44,14 @@ window.__portfolioReady = true;
     timers = [];
   }
 
-  function flyPhotoToHero() {
-    if (reduceMotion || !prePhotoWrap || !heroBlob || !heroPhoto) {
-      settleHeroPhoto();
-      return;
-    }
-
-    const from = prePhotoWrap.getBoundingClientRect();
-    const toInner = heroBlob.querySelector('.blob-inner') || heroBlob;
-    const to = toInner.getBoundingClientRect();
-
-    const flyer = document.createElement('div');
-    flyer.className = 'photo-flyer';
-    flyer.style.width = from.width + 'px';
-    flyer.style.height = from.height + 'px';
-    flyer.style.left = from.left + 'px';
-    flyer.style.top = from.top + 'px';
-
-    const img = document.createElement('img');
-    img.src = prePhoto ? prePhoto.src : 'Files/photograph.jpg';
-    img.alt = '';
-    flyer.appendChild(img);
-    document.body.appendChild(flyer);
-
-    flyer.offsetHeight; // reflow
-
-    requestAnimationFrame(function () {
-      flyer.style.width = to.width + 'px';
-      flyer.style.height = to.height + 'px';
-      flyer.style.left = to.left + 'px';
-      flyer.style.top = to.top + 'px';
-    });
-
-    setTimeout(function () {
-      settleHeroPhoto();
-      flyer.classList.add('done');
-      setTimeout(function () { flyer.remove(); }, 350);
-    }, 850);
-  }
-
   // ----- Intro progress bar: driven by REAL loading ------------------------
   // The bar climbs as actual assets land (stylesheet, the hero photo, fonts)
   // and only reaches 100% once the page is genuinely ready. It is never a
   // fixed fake timer, so it can't sit "stuck" while the site enters.
   const barFill = document.querySelector('.pre-bar-fill');
   const introStart = Date.now();
-  const MIN_INTRO = 600;   // let the entrance play on fast connections
-  const MAX_INTRO = 1100;  // bail out quickly on slow ones
+  const MIN_INTRO = slowNet ? 700 : 1400;   // let the wordmark entrance be seen
+  const MAX_INTRO = slowNet ? 1100 : 1700;  // never hold a slow link for long
   const CAP_UNTIL_READY = 0.9;
 
   const checkpoints = [];
@@ -120,8 +76,8 @@ window.__portfolioReady = true;
   // 2) the stylesheet, 3) this script (it is running right now)…
   track(document.querySelector('link[href$="style.css"]'), 2);
   checkpoints.push({ weight: 1, done: true });
-  // 4) the photo that both the intro and the hero show…
-  track(document.getElementById('pre-photo') || document.getElementById('hero-photo'), 2);
+  // 4) the hero photo…
+  track(document.getElementById('hero-photo'), 2);
   // 5) the webfont stylesheet, 6) the fonts themselves.
   track(document.querySelector('link[href*="fonts.googleapis.com"]'), 1);
   const fontCp = { weight: 2, done: false };
@@ -143,51 +99,25 @@ window.__portfolioReady = true;
   window.addEventListener('load', function () { loadFired = true; });
 
   let shown = 0, finished = false, exited = false, barTimer = 0;
-  let finishAt = 0, exitCompressed = false;
+  let finishAt = 0;
 
-  function finish(compressed) {
+  function finish() {
     if (finished) return;
     finished = true;
-    exitCompressed = !!compressed;
     finishAt = Date.now();
   }
 
   let started = false;
 
-  // `compressed` is used when the page is still loading after a short grace
-  // period — on a slow connection we cut the choreography short rather than
-  // holding the visitor behind the overlay.
-  function runSequence(compressed) {
+  // The splash just fades out (its own .6s CSS transition) to reveal the page,
+  // which revealHero() has already put in place underneath.
+  function runSequence() {
     if (started) return;
     started = true;
-    // Reveal hero content under the wipe so the page is ready when bars open
     revealHero();
-
-    // Reduced motion, a slow/data-saver connection, or a late start: skip the
-    // long choreography and get out of the way quickly.
-    if (reduceMotion || slowNet || compressed) {
-      settleHeroPhoto();
-      if (reduceMotion) {
-        hide();
-        later(destroy, 400);
-      } else {
-        exitZoom();
-        later(barsOut, 250);
-        later(hide, 400);
-        later(destroy, 900);
-      }
-      return;
-    }
-
-    // zoom → fly photo → bars reveal the real page immediately (transparent
-    // background fix) → quick cleanup fade → destroy once the last bar clears.
-    // The hold is short because the bar now completes the moment the page is
-    // genuinely ready — no need to stall once it is full.
-    later(exitZoom, 600);
-    later(flyPhotoToHero, 750);
-    later(barsOut, 1050);
-    later(hide, 1200);
-    later(destroy, 1900);
+    settleHeroPhoto();
+    hide();
+    later(destroy, reduceMotion ? 80 : 650);
   }
 
   // Paints the bar and decides when the page is genuinely ready. Deliberately a
@@ -206,13 +136,13 @@ window.__portfolioReady = true;
         shown = 1;
         if (barFill) barFill.style.transform = 'scaleX(1)';
         clearInterval(barTimer);
-        runSequence(exitCompressed);
+        runSequence();
       }
       return;
     }
     const elapsed = Date.now() - introStart;
-    if (elapsed >= MAX_INTRO) finish(true);                     // slow link: bail out
-    else if (loadFired && elapsed >= MIN_INTRO) finish(false);   // genuinely ready
+    if (elapsed >= MAX_INTRO) finish();                    // slow link: bail out
+    else if (loadFired && elapsed >= MIN_INTRO) finish();  // genuinely ready
   }
 
   // Tap, click or any key skips the intro — matters most on slow connections,
@@ -225,9 +155,10 @@ window.__portfolioReady = true;
     finished = true;
     shown = 1;
     if (barFill) barFill.style.transform = 'scaleX(1)';
+    revealHero();
     settleHeroPhoto();
     hide();
-    later(destroy, 350);
+    later(destroy, 250);
   }
   window.addEventListener('pointerdown', skipIntro, { once: true, passive: true });
   window.addEventListener('keydown', skipIntro, { once: true });
@@ -284,7 +215,7 @@ window.__portfolioReady = true;
 
 // ===== LOCK PHOTOS AGAINST DRAG / SAVE =====
 (function () {
-  document.querySelectorAll('#pre-photo, #hero-photo').forEach(function (img) {
+  document.querySelectorAll('#hero-photo').forEach(function (img) {
     img.addEventListener('dragstart', function (e) { e.preventDefault(); });
     img.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   });

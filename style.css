@@ -41,97 +41,63 @@ a:hover .arrow-up{transform:translateY(-5px);}
 @keyframes arrowNudge{0%,100%{transform:translateX(0);} 50%{transform:translateX(3px);}}
 @keyframes arrowNudgeUp{0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);}}
 
-/* PRELOADER */
+/* PRELOADER — dark brand splash */
 #preloader{
-  position:fixed; inset:0; z-index:999; background:var(--bg);
-  display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px;
-  transition:opacity .3s ease, visibility .3s ease;
+  position:fixed; inset:0; z-index:99999; background:#100e17;
+  display:none; align-items:center; justify-content:center;
+  transition:opacity .6s ease, visibility .6s ease;
   overflow:hidden;
 }
 /* Only show the intro when JS is running — otherwise the overlay would cover
    the page forever on a no-JS or failed-script load. */
 html.js #preloader{display:flex;}
 #preloader.hidden{opacity:0; visibility:hidden; pointer-events:none;}
-/* Once the bar-wipe curtain takes over, the preloader's own solid background
-   must go transparent immediately — otherwise the bars slide away to reveal
-   a plain color instead of the actual page, which is what caused the
-   "page doesn't appear instantly" stall. */
-#preloader.bars-out{background:transparent;}
-.pre-aurora{
-  position:absolute; inset:-20%; z-index:0; filter:blur(60px); opacity:0.55;
+
+/* Soft brand glow drifting behind the wordmark — our stand-in for the
+   reference splash's animated backdrop, in the site's own violet/teal. */
+.pre-glow{
+  position:absolute; inset:-25%; z-index:0; filter:blur(90px); opacity:0.4;
   background:
-    radial-gradient(38% 38% at 20% 30%, var(--violet), transparent 70%),
-    radial-gradient(35% 35% at 80% 25%, var(--teal), transparent 70%),
-    radial-gradient(40% 40% at 50% 80%, #f2b8e0, transparent 70%);
-  animation:auroraMove 9s ease-in-out infinite alternate;
+    radial-gradient(40% 40% at 22% 30%, var(--violet), transparent 70%),
+    radial-gradient(38% 38% at 78% 70%, var(--teal), transparent 70%);
+  animation:glowDrift 12s ease-in-out infinite alternate;
 }
-@keyframes auroraMove{
-  0%{transform:translate(0,0) scale(1) rotate(0deg);}
-  50%{transform:translate(4%,-3%) scale(1.15) rotate(8deg);}
-  100%{transform:translate(-3%,4%) scale(1.05) rotate(-6deg);}
-}
-#preloader.bars-out .pre-aurora{opacity:0; transition:opacity .1s;}
-#preloader > *:not(.pre-aurora){position:relative; z-index:1;}
-
-/* HORIZONTAL BAR-WIPE CURTAIN */
-.bar-wipe{position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; opacity:0; pointer-events:none;}
-.bar-wipe span{flex:1; background:linear-gradient(90deg,var(--violet),var(--teal)); transform:translateX(0);}
-#preloader.bars-out .bar-wipe{opacity:1; transition:opacity .05s;}
-#preloader.bars-out .bar-wipe span{animation:barSlide .55s cubic-bezier(.65,0,.35,1) forwards;}
-#preloader.bars-out .bar-wipe span:nth-child(odd){animation-name:barSlideLeft;}
-#preloader.bars-out .bar-wipe span:nth-child(even){animation-name:barSlideRight;}
-.bar-wipe span:nth-child(1){animation-delay:.02s;} .bar-wipe span:nth-child(2){animation-delay:.07s;}
-.bar-wipe span:nth-child(3){animation-delay:.12s;} .bar-wipe span:nth-child(4){animation-delay:.17s;}
-.bar-wipe span:nth-child(5){animation-delay:.22s;} .bar-wipe span:nth-child(6){animation-delay:.27s;}
-@keyframes barSlideLeft{ from{transform:translateX(0);} to{transform:translateX(-105%);} }
-@keyframes barSlideRight{ from{transform:translateX(0);} to{transform:translateX(105%);} }
-
-.pre-content{display:flex; flex-direction:column; align-items:center; gap:18px; border:none; background:transparent; box-shadow:none;}
-.pre-name{font-family:'Fraunces',serif; font-weight:700; font-size:1.4rem;}
-.pre-role{font-family:'JetBrains Mono',monospace; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--violet); margin-top:2px;}
-.pre-summary{max-width:280px; text-align:center; color:var(--muted); font-size:0.85rem; margin-top:8px;}
-.pre-bar{width:160px; height:4px; border-radius:4px; background:var(--clay-dark); overflow:hidden; margin-top:6px; box-shadow:var(--shadow-in);}
-/* Filled by script.js from REAL load progress (scaleX) — no fixed timer — so it
-   completes exactly when the page is ready instead of pretending to load. */
-.pre-bar-fill{height:100%; width:100%; transform:scaleX(0); transform-origin:left center; background:linear-gradient(90deg,var(--violet),var(--teal)); border-radius:4px; transition:transform .28s cubic-bezier(.33,0,.2,1);}
-
-.pre-flash{position:absolute; inset:0; z-index:2; background:#fff; opacity:0; pointer-events:none;}
-#preloader.exit .pre-content{animation:zoomExit .6s cubic-bezier(.65,0,.35,1) forwards;}
-#preloader.exit .pre-flash{animation:flashPunch .6s ease forwards;}
-@keyframes zoomExit{
-  0%{transform:scale(1); opacity:1; filter:blur(0);}
-  55%{transform:scale(2.4); opacity:1; filter:blur(2px);}
-  100%{transform:scale(6); opacity:0; filter:blur(14px);}
-}
-@keyframes flashPunch{
-  0%{opacity:0;}
-  55%{opacity:.9;}
-  100%{opacity:0;}
+@keyframes glowDrift{
+  0%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(3%,-2%) scale(1.12);}
+  100%{transform:translate(-2%,3%) scale(1.05);}
 }
 
-.pre-photo-wrap{
-  width:88px; height:88px; border-radius:50%; overflow:hidden;
-  box-shadow:var(--shadow-out);
-  background:linear-gradient(160deg,var(--violet),var(--teal));
-  flex-shrink:0;
-  animation:pulse 1.6s ease-in-out infinite;
+.pre-content{
+  position:relative; z-index:2; text-align:center; padding:0 22px;
+  /* springy entrance */
+  opacity:0; transform:translateY(24px) scale(0.96);
+  animation:preIn .8s cubic-bezier(.34,1.56,.64,1) .15s forwards;
 }
-.pre-photo{width:100%; height:100%; object-fit:cover; object-position:center 20%;}
-@keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.06);}}
+@keyframes preIn{ to{opacity:1; transform:none;} }
+.pre-name{
+  font-family:'Fraunces',serif; font-weight:900; line-height:1.04; margin:0;
+  font-size:clamp(2.1rem,7vw,4.5rem); letter-spacing:0.04em; color:#fff;
+  text-shadow:0 4px 40px rgba(0,0,0,.6);
+}
+.pre-name-accent{font-style:italic; color:var(--teal);}
+.pre-tag{
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:500;
+  letter-spacing:0.34em; text-transform:uppercase; color:rgba(255,255,255,.6);
+  max-width:30ch; margin:14px auto 0;
+}
+.pre-rule{
+  width:0; height:2px; margin:18px auto 0; border-radius:2px;
+  background:linear-gradient(90deg,var(--violet),var(--teal));
+  animation:preRule .8s cubic-bezier(.33,0,.2,1) .55s forwards;
+}
+@keyframes preRule{ to{width:104px;} }
 
-.photo-flyer{
-  position:fixed; z-index:1000; border-radius:50%; overflow:hidden;
-  pointer-events:none; will-change:left, top, width, height, opacity;
-  box-shadow:var(--shadow-out);
-  transition:
-    left .85s cubic-bezier(.22,1,.36,1),
-    top .85s cubic-bezier(.22,1,.36,1),
-    width .85s cubic-bezier(.22,1,.36,1),
-    height .85s cubic-bezier(.22,1,.36,1),
-    opacity .3s ease .55s;
-}
-.photo-flyer img{width:100%; height:100%; object-fit:cover; object-position:center 20%;}
-.photo-flyer.done{opacity:0;}
+/* Thin full-width bar pinned to the bottom. script.js fills it from REAL load
+   progress (scaleX), so it completes exactly when the page is ready instead of
+   running on a fixed fake timer. */
+.pre-bar{position:absolute; left:0; right:0; bottom:0; height:2px; z-index:3; background:rgba(255,255,255,.08); overflow:hidden;}
+.pre-bar-fill{height:100%; width:100%; transform:scaleX(0); transform-origin:left center; background:linear-gradient(90deg,var(--violet),var(--teal)); transition:transform .28s cubic-bezier(.33,0,.2,1);}
 
 /* NETWORK BANNER */
 .net-banner{
@@ -382,13 +348,13 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .blob, .pre-photo-wrap, .pre-aurora{animation:none;}
+  .blob, .pre-glow{animation:none;}
+  .pre-content{opacity:1; transform:none; animation:none;}
+  .pre-rule{width:104px; animation:none;}
   .pre-bar-fill{transition:none;}
-  .bar-wipe span{animation:none !important;}
-  #preloader.exit .pre-content, #preloader.exit .pre-flash{animation:none;}
+  #preloader{transition:none;}
   html.js .reveal{opacity:1 !important; transform:none !important; animation:none !important;}
   .hero h1, .hero p, .resume-card{opacity:1 !important; animation:none !important;}
-  .photo-flyer{transition-duration:0.01ms !important;}
   .arrow{transition:none;}
 }
 a:focus-visible, button:focus-visible{outline:3px solid var(--violet); outline-offset:3px;}
