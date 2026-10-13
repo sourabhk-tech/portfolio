@@ -82,7 +82,14 @@ html.js #preloader{display:flex;}
   flex-shrink:0; margin-bottom:18px;
   animation:pulse 1.6s ease-in-out infinite;
 }
-.pre-photo{width:100%; height:100%; object-fit:cover; object-position:center 20%;}
+.pre-photo{width:100%; height:100%; object-fit:cover; object-position:center 20%; opacity:0;}
+/* The photo dissolves in (blurred → sharp) the moment it has loaded — JS adds
+   .loaded on the img's load event so the reveal never plays on an empty frame. */
+.pre-photo.loaded{animation:photoDissolve 1.1s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes photoDissolve{
+  from{opacity:0; filter:blur(14px) saturate(.7); transform:scale(1.12);}
+  to{opacity:1; filter:blur(0) saturate(1); transform:scale(1);}
+}
 @keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.06);}}
 .pre-name{
   font-family:'Fraunces',serif; font-weight:900; line-height:1.04; margin:0;
@@ -358,6 +365,7 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 
 @media(prefers-reduced-motion:reduce){
   .blob, .pre-glow, .pre-photo-wrap{animation:none;}
+  .pre-photo{animation:none !important; opacity:1 !important; filter:none !important; transform:none !important;}
   .pre-content{opacity:1; transform:none; animation:none;}
   .pre-rule{width:104px; animation:none;}
   .pre-bar-fill{transition:none;}

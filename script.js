@@ -11,8 +11,23 @@ window.__portfolioReady = true;
   // making people wait through the full choreography.
   const slowNet = !!(conn && (conn.saveData || /^(slow-2g|2g)$/.test(conn.effectiveType || '')));
   const heroPhoto = document.getElementById('hero-photo');
+  const prePhoto = document.getElementById('pre-photo');
 
   if (heroPhoto) heroPhoto.classList.add('waiting');
+
+  // Dissolve the intro photo in the moment it has actually loaded, so the
+  // reveal never plays on an empty frame (a broken image simply stays hidden
+  // inside its ring instead of flashing a broken icon).
+  function dissolvePrePhoto() {
+    if (prePhoto) prePhoto.classList.add('loaded');
+  }
+  if (prePhoto) {
+    if (prePhoto.complete) {
+      if (prePhoto.naturalWidth > 0) dissolvePrePhoto();
+    } else {
+      prePhoto.addEventListener('load', dissolvePrePhoto, { once: true });
+    }
+  }
 
   function revealHero() {
     document.querySelectorAll('.hero .reveal').forEach(function (el) {
