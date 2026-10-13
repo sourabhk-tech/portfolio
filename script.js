@@ -89,15 +89,18 @@ window.__portfolioReady = true;
 
   let started = false;
 
-  function runSequence() {
+  // `compressed` is used when the page is still loading after a short grace
+  // period — on a slow connection we cut the choreography short rather than
+  // holding the visitor behind the overlay.
+  function runSequence(compressed) {
     if (started) return;
     started = true;
     // Reveal hero content under the wipe so the page is ready when bars open
     revealHero();
 
-    // Reduced motion, or a slow/data-saver connection: skip the long
-    // choreography and get out of the way quickly.
-    if (reduceMotion || slowNet) {
+    // Reduced motion, a slow/data-saver connection, or a late start: skip the
+    // long choreography and get out of the way quickly.
+    if (reduceMotion || slowNet || compressed) {
       settleHeroPhoto();
       if (reduceMotion) {
         hide();
@@ -136,9 +139,10 @@ window.__portfolioReady = true;
   if (document.readyState === 'complete') {
     runSequence();
   } else {
-    window.addEventListener('load', runSequence);
-    // Safety net: never hold the intro for more than ~2.2s of loading
-    later(runSequence, 2200);
+    window.addEventListener('load', function () { runSequence(); });
+    // Grace period: if the page is still fetching, start a shortened intro so
+    // slow connections aren't held behind the overlay.
+    later(function () { runSequence(true); }, 1400);
   }
 })();
 
