@@ -28,6 +28,7 @@ window.__portfolioReady = true;
   function barsOut() { pre.classList.add('bars-out'); }
   function hide() { pre.classList.add('hidden'); }
   function destroy() {
+    clearInterval(barTimer);
     if (pre.parentNode) pre.remove();
     // The page is visible now — let the typewriter start.
     document.dispatchEvent(new CustomEvent('intro:done'));
@@ -87,6 +88,70 @@ window.__portfolioReady = true;
     }, 850);
   }
 
+  // ----- Intro progress bar: driven by REAL loading ------------------------
+  // The bar climbs as actual assets land (stylesheet, the hero photo, fonts)
+  // and only reaches 100% once the page is genuinely ready. It is never a
+  // fixed fake timer, so it can't sit "stuck" while the site enters.
+  const barFill = document.querySelector('.pre-bar-fill');
+  const introStart = Date.now();
+  const MIN_INTRO = 600;   // let the entrance play on fast connections
+  const MAX_INTRO = 1100;  // bail out quickly on slow ones
+  const CAP_UNTIL_READY = 0.9;
+
+  const checkpoints = [];
+  function isLoaded(el) {
+    if (el.tagName === 'IMG') return el.complete && el.naturalWidth > 0;
+    if (el.tagName === 'LINK') return !!el.sheet;
+    return false;
+  }
+  function track(el, weight) {
+    if (!el) return;
+    const cp = { weight: weight, done: isLoaded(el) };
+    checkpoints.push(cp);
+    if (cp.done) return;
+    const mark = function () { cp.done = true; };
+    el.addEventListener('load', mark, { once: true });
+    // A broken asset must never hold the bar hostage.
+    el.addEventListener('error', mark, { once: true });
+  }
+
+  // 1) the document itself — this script only runs once parsing is past…
+  checkpoints.push({ weight: 1, done: document.readyState !== 'loading' });
+  // 2) the stylesheet, 3) this script (it is running right now)…
+  track(document.querySelector('link[href$="style.css"]'), 2);
+  checkpoints.push({ weight: 1, done: true });
+  // 4) the photo that both the intro and the hero show…
+  track(document.getElementById('pre-photo') || document.getElementById('hero-photo'), 2);
+  // 5) the webfont stylesheet, 6) the fonts themselves.
+  track(document.querySelector('link[href*="fonts.googleapis.com"]'), 1);
+  const fontCp = { weight: 2, done: false };
+  checkpoints.push(fontCp);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { fontCp.done = true; });
+    setTimeout(function () { fontCp.done = true; }, 2500); // never hang the bar
+  } else {
+    fontCp.done = true;
+  }
+  const totalWeight = checkpoints.reduce(function (n, c) { return n + c.weight; }, 0);
+  function realProgress() {
+    let done = 0;
+    checkpoints.forEach(function (c) { if (c.done) done += c.weight; });
+    return totalWeight ? done / totalWeight : 1;
+  }
+
+  let loadFired = document.readyState === 'complete';
+  window.addEventListener('load', function () { loadFired = true; });
+
+  let shown = 0, finished = false, exited = false, barTimer = 0;
+  let finishAt = 0, exitCompressed = false;
+
+  function finish(compressed) {
+    if (finished) return;
+    finished = true;
+    exitCompressed = !!compressed;
+    finishAt = Date.now();
+  }
+
   let started = false;
 
   // `compressed` is used when the page is still loading after a short grace
@@ -115,12 +180,39 @@ window.__portfolioReady = true;
     }
 
     // zoom → fly photo → bars reveal the real page immediately (transparent
-    // background fix) → quick cleanup fade → destroy once the last bar clears
-    later(exitZoom, 1400);
-    later(flyPhotoToHero, 1550);
-    later(barsOut, 1850);
-    later(hide, 2000);
-    later(destroy, 2700);
+    // background fix) → quick cleanup fade → destroy once the last bar clears.
+    // The hold is short because the bar now completes the moment the page is
+    // genuinely ready — no need to stall once it is full.
+    later(exitZoom, 600);
+    later(flyPhotoToHero, 750);
+    later(barsOut, 1050);
+    later(hide, 1200);
+    later(destroy, 1900);
+  }
+
+  // Paints the bar and decides when the page is genuinely ready. Deliberately a
+  // timer rather than requestAnimationFrame: frame production can be starved
+  // while a page is still loading, and the intro must never stall behind that.
+  function stepBar() {
+    const goal = finished ? 1 : Math.min(CAP_UNTIL_READY, realProgress() * 0.9 + 0.08);
+    shown += (goal - shown) * (finished ? 0.5 : 0.3);
+    if (goal - shown < 0.004) shown = goal;
+    if (barFill) barFill.style.transform = 'scaleX(' + shown.toFixed(4) + ')';
+
+    if (finished) {
+      // Let the completed bar sit for a beat, then leave.
+      if (!exited && Date.now() - finishAt >= 240) {
+        exited = true;
+        shown = 1;
+        if (barFill) barFill.style.transform = 'scaleX(1)';
+        clearInterval(barTimer);
+        runSequence(exitCompressed);
+      }
+      return;
+    }
+    const elapsed = Date.now() - introStart;
+    if (elapsed >= MAX_INTRO) finish(true);                     // slow link: bail out
+    else if (loadFired && elapsed >= MIN_INTRO) finish(false);   // genuinely ready
   }
 
   // Tap, click or any key skips the intro — matters most on slow connections,
@@ -129,6 +221,10 @@ window.__portfolioReady = true;
     if (pre.classList.contains('hidden')) return;
     clearTimers();
     started = true;
+    exited = true;
+    finished = true;
+    shown = 1;
+    if (barFill) barFill.style.transform = 'scaleX(1)';
     settleHeroPhoto();
     hide();
     later(destroy, 350);
@@ -136,13 +232,16 @@ window.__portfolioReady = true;
   window.addEventListener('pointerdown', skipIntro, { once: true, passive: true });
   window.addEventListener('keydown', skipIntro, { once: true });
 
-  if (document.readyState === 'complete') {
+  if (reduceMotion) {
+    // No animation wanted: complete the bar and get out of the way at once.
+    finished = true;
+    exited = true;
+    shown = 1;
+    if (barFill) barFill.style.transform = 'scaleX(1)';
     runSequence();
   } else {
-    window.addEventListener('load', function () { runSequence(); });
-    // Grace period: if the page is still fetching, start a shortened intro so
-    // slow connections aren't held behind the overlay.
-    later(function () { runSequence(true); }, 1400);
+    stepBar();
+    barTimer = setInterval(stepBar, 110);
   }
 })();
 

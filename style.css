@@ -25,7 +25,7 @@ h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.02em;}
 a{color:inherit; text-decoration:none;}
 img{
   max-width:100%; display:block;
-  -webkit-user-drag:none; user-drag:none;
+  -webkit-user-drag:none;
   -webkit-user-select:none; user-select:none;
   -webkit-touch-callout:none;
 }
@@ -91,8 +91,9 @@ html.js #preloader{display:flex;}
 .pre-role{font-family:'JetBrains Mono',monospace; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--violet); margin-top:2px;}
 .pre-summary{max-width:280px; text-align:center; color:var(--muted); font-size:0.85rem; margin-top:8px;}
 .pre-bar{width:160px; height:4px; border-radius:4px; background:var(--clay-dark); overflow:hidden; margin-top:6px; box-shadow:var(--shadow-in);}
-.pre-bar-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--violet),var(--teal)); border-radius:4px; animation:barfill 1.8s ease forwards;}
-@keyframes barfill{ to{width:100%;} }
+/* Filled by script.js from REAL load progress (scaleX) — no fixed timer — so it
+   completes exactly when the page is ready instead of pretending to load. */
+.pre-bar-fill{height:100%; width:100%; transform:scaleX(0); transform-origin:left center; background:linear-gradient(90deg,var(--violet),var(--teal)); border-radius:4px; transition:transform .28s cubic-bezier(.33,0,.2,1);}
 
 .pre-flash{position:absolute; inset:0; z-index:2; background:#fff; opacity:0; pointer-events:none;}
 #preloader.exit .pre-content{animation:zoomExit .6s cubic-bezier(.65,0,.35,1) forwards;}
@@ -381,10 +382,10 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .blob, .pre-photo-wrap, .pre-bar-fill, .pre-aurora{animation:none;}
+  .blob, .pre-photo-wrap, .pre-aurora{animation:none;}
+  .pre-bar-fill{transition:none;}
   .bar-wipe span{animation:none !important;}
   #preloader.exit .pre-content, #preloader.exit .pre-flash{animation:none;}
-  .pre-bar-fill{width:100%;}
   html.js .reveal{opacity:1 !important; transform:none !important; animation:none !important;}
   .hero h1, .hero p, .resume-card{opacity:1 !important; animation:none !important;}
   .photo-flyer{transition-duration:0.01ms !important;}
