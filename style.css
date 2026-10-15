@@ -34,7 +34,7 @@ img{
 /* ARROWS — used across links (project links, cert link, resume card, back-to-top).
    A gentle idle nudge keeps them visibly alive on touch devices too, since
    :hover barely fires on mobile — hover still gives an extra boost on desktop. */
-.arrow{display:inline-block; animation:arrowNudge 1.6s ease-in-out infinite; transition:transform .2s ease;}
+.arrow{display:inline-block; animation:arrowNudge 1.6s ease-in-out infinite; transition:transform .2s cubic-bezier(.22,1,.36,1);}
 .arrow-up{animation:arrowNudgeUp 1.6s ease-in-out infinite;}
 a:hover .arrow{animation-play-state:paused; transform:translateX(5px);}
 a:hover .arrow-up{transform:translateY(-5px);}
@@ -70,11 +70,8 @@ html.js #preloader{display:flex;}
 .pre-content{
   position:relative; z-index:2; text-align:center; padding:0 22px;
   display:flex; flex-direction:column; align-items:center;
-  /* springy entrance */
-  opacity:0; transform:translateY(24px) scale(0.96);
-  animation:preIn .8s cubic-bezier(.34,1.56,.64,1) .15s forwards;
+  /* the letters, tagline, photo and rule each carry their own entrance */
 }
-@keyframes preIn{ to{opacity:1; transform:none;} }
 .pre-photo-wrap{
   width:88px; height:88px; border-radius:50%; overflow:hidden;
   box-shadow:var(--shadow-out);
@@ -105,11 +102,20 @@ html.js #preloader{display:flex;}
   text-shadow:0 2px 14px rgba(124,111,224,.22);
 }
 .pre-name-accent{font-style:italic; color:var(--violet);}
+/* Masked per-letter rise for the splash wordmark — JS splits .pre-name into
+   .pre-mask > .pre-letter spans with staggered --ld delays. The mask padding
+   protects descenders; the negative margin keeps line layout identical. */
+.pre-mask{display:inline-block; overflow:hidden; vertical-align:top; padding:.08em 0; margin:-.08em 0;}
+.pre-letter{display:inline-block; will-change:transform;}
+:where(html.js) .pre-letter{transform:translateY(115%);}
+#preloader.letters-in .pre-letter{transform:translateY(0); transition:transform .9s cubic-bezier(.22,1,.36,1); transition-delay:var(--ld,0s);}
 .pre-tag{
   font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:500;
   letter-spacing:0.34em; text-transform:uppercase; color:var(--muted);
   max-width:30ch; margin:14px auto 0;
 }
+:where(html.js) .pre-tag{opacity:0; transform:translateY(12px);}
+#preloader.letters-in .pre-tag{opacity:1; transform:none; transition:opacity .7s ease .55s, transform .7s cubic-bezier(.22,1,.36,1) .55s;}
 .pre-rule{
   width:0; height:2px; margin:18px auto 0; border-radius:2px;
   background:linear-gradient(90deg,var(--violet),var(--teal));
@@ -145,7 +151,7 @@ nav.scrolled{padding:10px 0;}
 .logo-sub{font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:500;}
 .navpill{display:flex; gap:4px; background:var(--clay); padding:6px; border-radius:999px; box-shadow:var(--shadow-in); overflow-x:auto; max-width:100%; scrollbar-width:none; transition:box-shadow .25s ease;}
 .navpill::-webkit-scrollbar{display:none;}
-.navpill a{padding:9px 16px; border-radius:999px; font-size:0.88rem; font-weight:500; color:var(--muted); transition:all .25s ease; white-space:nowrap; flex-shrink:0;}
+.navpill a{padding:9px 16px; border-radius:999px; font-size:0.88rem; font-weight:500; color:var(--muted); transition:all .25s cubic-bezier(.22,1,.36,1); white-space:nowrap; flex-shrink:0;}
 .navpill a:hover{color:var(--ink); box-shadow:var(--shadow-soft);}
 .navpill a.active{color:var(--ink); background:var(--bg); box-shadow:var(--shadow-in);}
 
@@ -167,13 +173,13 @@ nav.scrolled{padding:10px 0;}
   background:linear-gradient(160deg,var(--clay),var(--clay-dark));
   box-shadow:-6px 0 24px rgba(46,43,69,0.18);
   padding:28px 24px; display:flex; flex-direction:column; gap:8px;
-  transform:translateX(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+  transform:translateX(100%); transition:transform .3s cubic-bezier(.22,1,.36,1);
   will-change:transform;
 }
 .mobile-menu.open .mobile-menu-panel{transform:translateX(0);}
 .mobile-menu-close{align-self:flex-end; width:40px; height:40px; border-radius:12px; background:var(--bg); box-shadow:var(--shadow-in); border:none; display:flex; align-items:center; justify-content:center; color:var(--ink); cursor:pointer; margin-bottom:20px;}
 .mobile-menu-links{display:flex; flex-direction:column; gap:6px;}
-.mobile-navlink{padding:14px 16px; border-radius:14px; font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; color:var(--ink); transition:background .2s ease, transform .2s ease;}
+.mobile-navlink{padding:14px 16px; border-radius:14px; font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; color:var(--ink); transition:background .2s cubic-bezier(.22,1,.36,1), transform .2s cubic-bezier(.22,1,.36,1);}
 .mobile-navlink:hover, .mobile-navlink.active{background:var(--bg); box-shadow:var(--shadow-in); transform:translateX(-4px);}
 
 /* HERO */
@@ -186,7 +192,7 @@ nav.scrolled{padding:10px 0;}
 .hero h1 em{font-style:normal; color:var(--violet);}
 .hero p{color:var(--muted); font-size:clamp(0.95rem,2vw,1.08rem); max-width:480px; margin-bottom:28px;}
 
-.btn{padding:14px 24px; border-radius:18px; font-weight:600; font-size:0.92rem; background:var(--clay); box-shadow:var(--shadow-out); transition:all .2s ease; display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;}
+.btn{padding:14px 24px; border-radius:18px; font-weight:600; font-size:0.92rem; background:var(--clay); box-shadow:var(--shadow-out); transition:all .2s cubic-bezier(.22,1,.36,1); display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;}
 .btn:hover{box-shadow:var(--shadow-in); transform:translateY(1px);}
 .btn.primary{background:var(--violet); color:#fff; box-shadow:6px 6px 14px #b9b0e8, -6px -6px 14px #ffffff;}
 .btn.primary:hover{box-shadow:inset 4px 4px 10px #6459c9, inset -4px -4px 10px #9186f0;}
@@ -198,7 +204,7 @@ nav.scrolled{padding:10px 0;}
   display:inline-flex; align-items:center; gap:14px;
   background:var(--clay); border-radius:20px; box-shadow:var(--shadow-out);
   padding:14px 20px; max-width:340px;
-  transition:transform .2s ease, box-shadow .2s ease;
+  transition:transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s cubic-bezier(.22,1,.36,1);
 }
 .hero .resume-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-in);}
 .resume-icon{color:var(--violet); flex-shrink:0; display:flex;}
@@ -264,8 +270,20 @@ section{padding:clamp(48px,8vw,70px) 0; content-visibility:auto; contain-intrins
 .proj .reveal:nth-child(2){animation-delay:.08s;}
 .proj .reveal:nth-child(3){animation-delay:.16s;}
 
+/* Masked per-word rise for headlines — JS splits .hero h1 and .sectitle into
+   .wwrap > .wword spans with staggered --wd delays, driven by the same .in
+   classes as the block reveal. The words carry the motion, so the block fade
+   is suppressed here to avoid doubling up. */
+.wwrap{display:inline-block; overflow:hidden; vertical-align:top; padding:.08em 0; margin:-.08em 0;}
+.wword{display:inline-block; will-change:transform;}
+:where(html.js) .wword{transform:translateY(110%);}
+:where(html.js) .reveal.words.in-view .wword, :where(html.js) .reveal.words.in .wword{
+  transform:translateY(0); transition:transform .9s cubic-bezier(.22,1,.36,1); transition-delay:var(--wd,0s);
+}
+:where(html.js) .reveal.words.in-view, :where(html.js) .reveal.words.in{animation:none;}
+
 /* CLAY CARD */
-.card{background:var(--clay); border-radius:24px; box-shadow:var(--shadow-out); padding:clamp(22px,4vw,30px); transition:transform .25s ease, box-shadow .25s ease;}
+.card{background:var(--clay); border-radius:24px; box-shadow:var(--shadow-out); padding:clamp(22px,4vw,30px); transition:transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s cubic-bezier(.22,1,.36,1);}
 .card:hover{transform:translateY(-4px);}
 
 /* ABOUT — three matching cards in a row */
@@ -315,7 +333,7 @@ a.cert-card{display:grid;}
 /* FOOTER */
 footer{text-align:center; padding:32px 0; color:var(--muted); font-size:0.82rem;}
 .footer-links{display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-bottom:14px;}
-.footer-links a{font-weight:500; color:var(--muted); transition:color .2s; display:inline-flex; align-items:center; gap:4px;}
+.footer-links a{font-weight:500; color:var(--muted); transition:color .2s cubic-bezier(.22,1,.36,1); display:inline-flex; align-items:center; gap:4px;}
 .footer-links a:hover{color:var(--violet);}
 footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 
@@ -374,7 +392,7 @@ footer p a{color:var(--violet); font-weight:600; margin-left:6px;}
 @media(prefers-reduced-motion:reduce){
   .blob, .pre-glow, .pre-photo-wrap{animation:none;}
   .pre-photo{animation:none !important; opacity:1 !important; filter:none !important; transform:none !important;}
-  .pre-content{opacity:1; transform:none; animation:none;}
+  .pre-letter, .pre-tag, .wword{transform:none !important; opacity:1 !important; transition:none !important;}
   .pre-rule{width:104px; animation:none;}
   .pre-bar-fill{transition:none;}
   #preloader{transition:none;}

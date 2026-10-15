@@ -29,6 +29,44 @@ window.__portfolioReady = true;
     }
   }
 
+  // Split the splash wordmark into masked per-letter spans that rise with a
+  // stagger. The trigger is deferred past first paint (double-rAF + a timeout
+  // fallback for starved frames): adding it in the same frame as the split
+  // would land pre-painted and the rise would never be seen.
+  function triggerLetters() { pre.classList.add('letters-in'); }
+  (function splitIntroLetters() {
+    const name = pre.querySelector('.pre-name');
+    if (!name || !window.NodeFilter) { triggerLetters(); return; }
+    const walker = document.createTreeWalker(name, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    let i = 0;
+    nodes.forEach(function (node) {
+      const frag = document.createDocumentFragment();
+      Array.prototype.forEach.call(node.textContent, function (ch) {
+        if (ch === ' ') { frag.appendChild(document.createTextNode(' ')); return; }
+        const mask = document.createElement('span');
+        mask.className = 'pre-mask';
+        const letter = document.createElement('span');
+        letter.className = 'pre-letter';
+        letter.textContent = ch;
+        letter.style.setProperty('--ld', (i * 0.04).toFixed(2) + 's');
+        i++;
+        mask.appendChild(letter);
+        frag.appendChild(mask);
+      });
+      if (node.parentNode) node.parentNode.replaceChild(frag, node);
+    });
+    if (window.requestAnimationFrame) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(triggerLetters);
+      });
+      setTimeout(triggerLetters, 300);
+    } else {
+      triggerLetters();
+    }
+  })();
+
   function revealHero() {
     document.querySelectorAll('.hero .reveal').forEach(function (el) {
       el.classList.add('in-view');
@@ -288,6 +326,42 @@ window.__portfolioReady = true;
   }
 })();
 
+// ===== MASKED WORD RISES (hero headline + section titles) =====
+(function () {
+  // Wrap each word as <span class="wwrap"><span class="wword">word</span></span>,
+  // preserving inner elements (em) and collapsible spaces so wrapping is
+  // unchanged. The existing .reveal observer drives the rise via .in.
+  function splitWords(el, baseDelay) {
+    if (!el || !window.NodeFilter) return;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      const frag = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+        const wrap = document.createElement('span');
+        wrap.className = 'wwrap';
+        const inner = document.createElement('span');
+        inner.className = 'wword';
+        inner.textContent = part;
+        wrap.appendChild(inner);
+        frag.appendChild(wrap);
+      });
+      if (node.parentNode) node.parentNode.replaceChild(frag, node);
+    });
+    const words = el.querySelectorAll('.wword');
+    words.forEach(function (w, i) {
+      w.style.setProperty('--wd', (baseDelay + i * 0.07).toFixed(2) + 's');
+    });
+    if (words.length) el.classList.add('words');
+  }
+
+  document.querySelectorAll('.hero h1').forEach(function (el) { splitWords(el, 0.15); });
+  document.querySelectorAll('.sectitle').forEach(function (el) { splitWords(el, 0); });
+})();
+
 // ===== SCROLL-REVEAL ANIMATIONS =====
 (function () {
   const items = document.querySelectorAll('.reveal');
@@ -301,7 +375,12 @@ window.__portfolioReady = true;
       }
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-  items.forEach(function (item) { io.observe(item); });
+  items.forEach(function (item) {
+    // Hero entrances are choreographed by revealHero() at the intro exit so
+    // they rise as the splash clears — not behind it on page load.
+    if (item.closest && item.closest('.hero')) return;
+    io.observe(item);
+  });
 })();
 
 // ===== TYPEWRITER =====
